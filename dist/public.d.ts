@@ -1,5 +1,3 @@
-import type { z } from 'zod';
-
 export interface Defaults {
   seed?: number;
   array: { min: number; max: number };
@@ -12,17 +10,17 @@ export interface Defaults {
   date: { min: Date; max: Date };
 }
 
-export declare function createFixture<T extends z.ZodType>(
-  schema: T,
+export declare function createFixture<TOutput = unknown>(
+  schema: { _output: TOutput } | { _zod: { _output: TOutput } } | Record<string, any>,
   instanceDefaults?: Partial<Defaults>
-): z.infer<T>;
+): TOutput;
 
 export declare class Fixture {
   constructor(instanceDefaults?: Partial<Defaults>);
-  fromSchema<T extends z.ZodType>(
-    schema: T,
+  fromSchema<TOutput = unknown>(
+    schema: { _output: TOutput } | { _zod: { _output: TOutput } } | Record<string, any>,
     instanceDefaults?: Partial<Defaults>
-  ): z.infer<T>;
+  ): TOutput;
   extend(...generators: Generator[]): this;
 }
 
@@ -30,16 +28,19 @@ export declare class ConstrainedFixture extends Fixture {}
 export declare class UnconstrainedFixture extends Fixture {}
 
 export interface Generator {
-  schema?: new (...args: any[]) => z.ZodType;
-  filter?: (args: { def: any; schema: z.ZodType; transform: any; context: any }) => boolean;
-  output: (args: { def: any; schema: z.ZodType; transform: any; context: any }) => any;
+  schema?: any;
+  filter?: (args: { def: any; schema: any; transform: any; context: any }) => boolean;
+  output: (args: { def: any; schema: any; transform: any; context: any }) => any;
 }
 
 export declare function Generator(config: Generator): Generator;
 
 export declare class Transformer {
   constructor(instanceDefaults?: Partial<Defaults>);
-  fromSchema<T extends z.ZodType>(schema: T, instanceDefaults?: Partial<Defaults>): z.infer<T>;
+  fromSchema<TOutput = unknown>(
+    schema: { _output: TOutput } | { _zod: { _output: TOutput } } | Record<string, any>,
+    instanceDefaults?: Partial<Defaults>
+  ): TOutput;
   extend(...generators: Generator[]): this;
 }
 
