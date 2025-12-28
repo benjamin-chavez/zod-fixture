@@ -1,4 +1,6 @@
-export interface Defaults {
+const fs = require('fs');
+
+const types = `export interface Defaults {
   seed?: number;
   array: { min: number; max: number };
   map: { min: number; max: number };
@@ -37,9 +39,16 @@ export declare function Generator(config: Generator): Generator;
 
 export declare class Transformer {
   constructor(instanceDefaults?: Partial<Defaults>);
-  fromSchema<TOutput = unknown>(schema: any, instanceDefaults?: Partial<Defaults>): TOutput;
+  fromSchema<TOutput = unknown>(
+    schema: { _output: TOutput } | { _zod: { _output: TOutput } } | Record<string, any>,
+    instanceDefaults?: Partial<Defaults>
+  ): TOutput;
   extend(...generators: Generator[]): this;
 }
 
 export declare class ConstrainedTransformer extends Transformer {}
 export declare class UnconstrainedTransformer extends Transformer {}
+`;
+
+fs.writeFileSync('dist/public.d.ts', types);
+console.log('Fixed dist/public.d.ts');
