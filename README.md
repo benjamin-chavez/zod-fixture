@@ -88,7 +88,7 @@ const personSchema = z.object({
 		state: z.string(),
 	}),
 	pets: z.array(z.object({ name: z.string(), breed: z.string() })),
-	totalVisits: z.number().int().positive(),
+	totalVisits: z.int().positive(),
 });
 
 const person = createFixture(personSchema, { seed: 11 });
@@ -147,10 +147,10 @@ The example below uses 2 custom generators and a typical pattern for filtering b
 <sub>[Example](https://github.com/timdeschryver/zod-fixture/tree/main/examples/fixture-extension.test.ts)</sub>
 
 ```ts
-import { ZodNumber, ZodObject, z } from 'zod';
+import { z, ZodObject } from 'zod';
 import { Fixture, Generator } from 'zod-fixture';
 const totalVisitsGenerator = Generator({
-	schema: ZodNumber,
+	// schema: ZodNumber,
 	filter: ({ context }) => context.path.at(-1) === 'totalVisits',
 	/**
 	 * The `context` provides a path to the current field
@@ -190,7 +190,7 @@ const personSchema = z.object({
 		state: z.string(),
 	}),
 	pets: z.array(z.object({ name: z.string(), breed: z.string() })),
-	totalVisits: z.number().int().positive(),
+	totalVisits: z.int().positive(),
 });
 
 const fixture = new Fixture({ seed: 38 }).extend([
@@ -316,34 +316,35 @@ There are two methods provided by the `checks` utility:
 <sub>[Example](https://github.com/timdeschryver/zod-fixture/tree/main/examples/generator-filtering-zod-checks.test.ts)</sub>
 
 ```ts
-import { z, ZodString } from 'zod';
+import { z } from 'zod';
 import { Fixture, Generator } from 'zod-fixture';
 
 const EmailGenerator = Generator({
-	schema: ZodString,
-	filter: ({ transform, def }) =>
-		transform.utils.checks(def.checks).has('email'),
+	filter: ({ schema }) => schema.constructor.name === 'ZodEmail',
 	output: () => 'john.malkovich@gmail.com',
 });
 
 const StringGenerator = Generator({
-	schema: ZodString,
+	filter: ({ schema }) => schema.constructor.name === 'ZodString',
 	output: ({ transform, def }) => {
-		let min = transform.utils.checks(def.checks).find('greater_than')?.value;
+		const checks = transform.utils.checks(def.checks ?? []);
+
+		// v4 check names: min_length, max_length, length_equals
+		let min = checks.find('min_length')?._zod.def.minimum;
 		/**
 		 *     kind: "min";
 		 *     value: number;
 		 *     message?: string | undefined; // a custom error message
 		 */
 
-		let max = transform.utils.checks(def.checks).find('max')?.value;
+		let max = checks.find('max_length')?._zod.def.maximum;
 		/**
 		 *     kind: "max";
 		 *     value: number;
 		 *     message?: string | undefined; // a custom error message
 		 */
 
-		const length = transform.utils.checks(def.checks).find('length');
+		const length = checks.find('length_equals')?._zod.def.length;
 		/**
 		 *     kind: "length";
 		 *     value: number;
@@ -361,7 +362,7 @@ const StringGenerator = Generator({
 
 const personSchema = z.object({
 	name: z.string().max(10),
-	email: z.string().email(),
+	email: z.email(),
 });
 
 const fixture = new Fixture({ seed: 38 }).extend([
@@ -399,11 +400,11 @@ const NameGenerator = Generator({
 
 const personSchema = z.object({
 	name: z.string(), // this matches ['name']
-	email: z.string().email(),
+	email: z.email(),
 	relatives: z
 		.object({
 			name: z.string(), // this will match as well ['relatives', 'name']
-			email: z.string().email(),
+			email: z.email(),
 		})
 		.array(),
 });
@@ -446,7 +447,7 @@ For example, in the example below we create our own `totalVisitsGenerator` to re
 
 ```ts
 const totalVisitsGenerator = Generator({
-	schema: ZodNumber,
+	// schema: ZodNumber,
 	filter: ({ context }) => context.path.at(-1) === 'totalVisits',
 	/**
 	 * The `context` provides a path to the current field
