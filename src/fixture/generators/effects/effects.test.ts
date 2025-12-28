@@ -1,18 +1,12 @@
 import { ConstrainedTransformer } from '@/transformer/transformer';
 import { describe, expect, test, vi } from 'vitest';
 import { z } from 'zod';
-import {
-	PreprocessGenerator,
-	RefinementGenerator,
-	TransformGenerator,
-} from '.';
+import { PipeGenerator } from '.';
 import { StringGenerator } from '../string';
 
 describe('usage with effects', () => {
 	const transform = new ConstrainedTransformer().extend([
-		PreprocessGenerator,
-		RefinementGenerator,
-		TransformGenerator,
+		PipeGenerator,
 		StringGenerator,
 	]);
 

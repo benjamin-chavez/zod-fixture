@@ -1,13 +1,10 @@
 import { ConstrainedTransformer } from '@/transformer/transformer';
 import { describe, expect, test } from 'vitest';
 import { z } from 'zod';
-import { EnumGenerator, NativeEnumGenerator } from '.';
+import { EnumGenerator } from '.';
 
 describe('create enums', () => {
-	const transform = new ConstrainedTransformer().extend([
-		EnumGenerator,
-		NativeEnumGenerator,
-	]);
+	const transform = new ConstrainedTransformer().extend([EnumGenerator]);
 
 	test('produces a valid enum', () => {
 		expect(transform).toReasonablySatisfy(z.enum(['Salmon', 'Tuna', 'Trout']));
@@ -25,7 +22,7 @@ describe('create enums', () => {
 			Banana,
 		}
 
-		const value = transform.fromSchema(z.nativeEnum(Fruits));
+		const value = transform.fromSchema(z.enum(Fruits));
 		expect(typeof value).toBe('number');
 		expect((value as number).toString()).toMatch(/^0|1/);
 	});
@@ -38,9 +35,7 @@ describe('create enums', () => {
 		}
 
 		expect(
-			(
-				transform.fromSchema(z.nativeEnum(Fruits)) as string | number
-			).toString(),
+			(transform.fromSchema(z.enum(Fruits)) as string | number).toString(),
 		).toMatch(/^apple|banana|3$/);
 	});
 
@@ -52,9 +47,7 @@ describe('create enums', () => {
 		} as const;
 
 		expect(
-			(
-				transform.fromSchema(z.nativeEnum(Fruits)) as string | number
-			).toString(),
+			(transform.fromSchema(z.enum(Fruits)) as string | number).toString(),
 		).toMatch(/^apple|banana|3$/);
 	});
 });

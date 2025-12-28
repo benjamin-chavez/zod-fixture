@@ -1,12 +1,18 @@
+// .vitest/extend.ts
+
 import { expect } from 'vitest';
 import type { ZodTypeAny } from 'zod';
 import { ITERATIONS } from './utils';
 
 expect.extend({
-	toReasonablySatisfy(transform, schema: ZodTypeAny, iterations = ITERATIONS) {
+	async toReasonablySatisfy(
+		transform,
+		schema: ZodTypeAny,
+		iterations = ITERATIONS,
+	) {
 		for (let i = 0; i < iterations; i++) {
 			const fixture = transform.fromSchema(schema);
-			const result = schema.safeParse(fixture);
+			const result = await schema.safeParseAsync(fixture);
 
 			if (result.success === false) {
 				const { seed } = transform;

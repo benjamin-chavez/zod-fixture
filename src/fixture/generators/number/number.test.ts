@@ -1,10 +1,15 @@
+// src/fixture/generators/number/number.test.ts
+
 import { ConstrainedTransformer } from '@/transformer/transformer';
 import { describe, expect, test } from 'vitest';
 import { z } from 'zod';
-import { NumberGenerator } from '.';
+import { NumberGenerator, NumberFormatGenerator } from '.';
 
 describe('create numbers', () => {
-	const transform = new ConstrainedTransformer().extend([NumberGenerator]);
+	const transform = new ConstrainedTransformer().extend([
+		NumberGenerator,
+		NumberFormatGenerator,
+	]);
 
 	test('produces a valid number', () => {
 		expect(transform).toReasonablySatisfy(z.number());
@@ -19,7 +24,7 @@ describe('create numbers', () => {
 	});
 
 	test("creates a number that's an int", () => {
-		expect(transform.fromSchema(z.number().int())).toBeTypeOf('number');
+		expect(transform.fromSchema(z.int())).toBeTypeOf('number');
 	});
 
 	describe('min and max', () => {
@@ -29,16 +34,16 @@ describe('create numbers', () => {
 
 		test('creates a number with a min value', () => {
 			expect(transform.fromSchema(z.number().min(100))).toBeGreaterThanOrEqual(
-				100
+				100,
 			);
 			expect(transform.fromSchema(z.number().gte(100))).toBeGreaterThanOrEqual(
-				100
+				100,
 			);
 		});
 
 		test('creates a number with a negative min value', () => {
 			expect(transform.fromSchema(z.number().min(-10))).toBeGreaterThanOrEqual(
-				-10
+				-10,
 			);
 		});
 
@@ -59,7 +64,7 @@ describe('create numbers', () => {
 
 		test('throws when min is greater than max', () => {
 			expect(() =>
-				transform.fromSchema(z.number().min(100).max(10))
+				transform.fromSchema(z.number().min(100).max(10)),
 			).toThrowError();
 		});
 	});
@@ -72,7 +77,7 @@ describe('create numbers', () => {
 		test('creates a positive number', () => {
 			expect(transform.fromSchema(z.number().positive())).toBeGreaterThan(0);
 			expect(
-				transform.fromSchema(z.number().nonnegative())
+				transform.fromSchema(z.number().nonnegative()),
 			).toBeGreaterThanOrEqual(0);
 		});
 
@@ -83,7 +88,7 @@ describe('create numbers', () => {
 		test('creates a negative number', () => {
 			expect(transform.fromSchema(z.number().negative())).toBeLessThan(0);
 			expect(
-				transform.fromSchema(z.number().nonpositive())
+				transform.fromSchema(z.number().nonpositive()),
 			).toBeLessThanOrEqual(0);
 		});
 	});
@@ -108,7 +113,7 @@ describe('create numbers', () => {
 
 	test('creates a finite number', () => {
 		expect(
-			isFinite(transform.fromSchema(z.number().finite()) as number)
+			isFinite(transform.fromSchema(z.number().finite()) as number),
 		).toBeTruthy();
 	});
 });

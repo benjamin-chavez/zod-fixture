@@ -1,48 +1,30 @@
-import { ZodEffects } from '@/internal/zod';
+// src/fixture/generators/effects/index.ts
+
 import { Generator } from '@/transformer/generator';
 
-export const TransformGenerator = Generator({
-	schema: ZodEffects,
-	filter: ({ def }) => def.effect.type === 'transform',
+// ZodPipe handles both transform and preprocess in v4
+export const PipeGenerator = Generator({
+	filter: ({ schema }) => schema.constructor.name === 'ZodPipe',
 	output: ({ def, transform, context }) => {
-		if (def.effect.type !== 'transform')
-			throw new Error('Must be a transform effect.');
+		const input = (def as any).in;
+		const output = (def as any).out;
 
-		const initialValue = transform.fromSchema(def.schema, context);
-		return def.effect.transform(initialValue, {
-			addIssue: transform.utils.noop,
-			// @TODO: Verify that path is not needed here.
-			path: [],
-		});
-	},
-});
+		if (input.constructor.name === 'ZodTransform') {
+			return transform.fromSchema(output, context);
+		}
 
-export const PreprocessGenerator = Generator({
-	schema: ZodEffects,
-	filter: ({ def }) => def.effect.type === 'preprocess',
-	output: ({ def, transform, context }) => {
-		if (def.effect.type !== 'preprocess')
-			throw new Error('Must be a preprocess effect.');
+		if (output.constructor.name === 'ZodTransform') {
+			const initialValue = transform.fromSchema(input, context);
+			const transformFn = output._def?.transform ?? output.def?.transform;
+			if (typeof transformFn === 'function') {
+				return transformFn(initialValue, {
+					addIssue: transform.utils.noop,
+					path: [],
+				});
+			}
+			return initialValue;
+		}
 
-		// We don't actually care about the preprocessor
-		// when mocking data because we're not validating
-		// input. We only care about the expected output.
-		return transform.fromSchema(def.schema, context);
-	},
-});
-
-export const RefinementGenerator = Generator({
-	schema: ZodEffects,
-	filter: ({ def }) => def.effect.type === 'refinement',
-	output: ({ def, transform, context }) => {
-		if (def.effect.type !== 'refinement')
-			throw new Error('Must be a refinement effect.');
-
-		const { schema } = def;
-
-		console.warn(
-			`Because refinements use custom validations, we have no way to accurately manufacture acceptable values. Using the parent type (${schema._def.typeName}) to approximate the result.`
-		);
-		return transform.fromSchema(schema, context);
+		return transform.fromSchema(input, context);
 	},
 });

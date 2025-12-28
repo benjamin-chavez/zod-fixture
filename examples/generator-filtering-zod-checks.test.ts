@@ -1,33 +1,36 @@
+// examples/generator-filtering-zod-checks.test.ts
+
 import { expect, test } from 'vitest';
 // #region example
-import { z, ZodString } from 'zod';
+import { z } from 'zod';
 import { Fixture, Generator } from 'zod-fixture';
 
 const EmailGenerator = Generator({
-	schema: ZodString,
-	filter: ({ transform, def }) =>
-		transform.utils.checks(def.checks).has('email'),
+	filter: ({ schema }) => schema.constructor.name === 'ZodEmail',
 	output: () => 'john.malkovich@gmail.com',
 });
 
 const StringGenerator = Generator({
-	schema: ZodString,
+	filter: ({ schema }) => schema.constructor.name === 'ZodString',
 	output: ({ transform, def }) => {
-		let min = transform.utils.checks(def.checks).find('min')?.value;
+		const checks = transform.utils.checks(def.checks ?? []);
+
+		// v4 check names: min_length, max_length, length_equals
+		let min = checks.find('min_length')?._zod.def.minimum;
 		/**
 		 *     kind: "min";
 		 *     value: number;
 		 *     message?: string | undefined; // a custom error message
 		 */
 
-		let max = transform.utils.checks(def.checks).find('max')?.value;
+		let max = checks.find('max_length')?._zod.def.maximum;
 		/**
 		 *     kind: "max";
 		 *     value: number;
 		 *     message?: string | undefined; // a custom error message
 		 */
 
-		const length = transform.utils.checks(def.checks).find('length');
+		const length = checks.find('length_equals')?._zod.def.length;
 		/**
 		 *     kind: "length";
 		 *     value: number;
@@ -45,7 +48,7 @@ const StringGenerator = Generator({
 
 const personSchema = z.object({
 	name: z.string().max(10),
-	email: z.string().email(),
+	email: z.email(),
 });
 
 const fixture = new Fixture({ seed: 38 }).extend([

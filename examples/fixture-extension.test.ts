@@ -1,11 +1,13 @@
+// examples/fixture-extension.test.ts
+
 import { expect, test } from 'vitest';
 // #region example
-import { ZodNumber, ZodObject, z } from 'zod';
+import { z, ZodObject } from 'zod';
 import { Fixture, Generator } from 'zod-fixture';
 
 // #region generator
 const totalVisitsGenerator = Generator({
-	schema: ZodNumber,
+	// schema: ZodNumber,
 	filter: ({ context }) => context.path.at(-1) === 'totalVisits',
 	/**
 	 * The `context` provides a path to the current field
@@ -47,7 +49,7 @@ const personSchema = z.object({
 		state: z.string(),
 	}),
 	pets: z.array(z.object({ name: z.string(), breed: z.string() })),
-	totalVisits: z.number().int().positive(),
+	totalVisits: z.int().positive(),
 });
 
 const fixture = new Fixture({ seed: 38 }).extend([

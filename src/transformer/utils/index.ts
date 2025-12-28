@@ -1,4 +1,4 @@
-import type { ZodTypeAny } from '@/internal/zod';
+import type { ZodType } from '@/internal/zod';
 import { ZodLazy } from '@/internal/zod';
 import type { ZodConstructorOrSchema } from '../generator';
 import { isZodConstructor } from '../generator';
@@ -7,7 +7,7 @@ import { Checks } from './Checks';
 import { Randomization } from './Randomization';
 
 export class Utils {
-	recursion = new WeakMap<() => ZodTypeAny, number>();
+	recursion = new WeakMap<() => ZodType, number>();
 	random: Randomization;
 
 	constructor(private runner: Runner) {
@@ -57,15 +57,15 @@ export class Utils {
 		return Array.from({ length }, (_, i) => factory(i));
 	}
 
-	ifNotNever<TSchema extends ZodTypeAny>(
+	ifNotNever<TSchema extends ZodType>(
 		schema: TSchema | null | undefined,
 		action: (schema: TSchema) => unknown,
 	) {
-		if (!schema || schema._def.typeName === 'ZodNever') return;
+		if (!schema || schema.constructor.name === 'ZodNever') return;
 		action(schema);
 	}
 
-	recursionCheck<TSchema extends ZodTypeAny>(
+	recursionCheck<TSchema extends ZodType>(
 		schema: TSchema,
 		action: (schema: TSchema) => unknown,
 	) {
@@ -77,19 +77,24 @@ export class Utils {
 		action(schema);
 	}
 
-	isType<TSchema extends ZodTypeAny>(
+	isType<TSchema extends ZodType>(
 		target: ZodConstructorOrSchema<TSchema>,
-		schema: ZodTypeAny,
+		schema: ZodType,
 	): schema is TSchema {
 		return isZodConstructor(target)
-			? schema._def.typeName === target.name
+			? schema.constructor.name === target.name
 			: // If our generator was created with an instance, make sure it matches
-			  // the schema we're trying to generate.
-			  // This is particularly important for z.custom schemas.
-			  schema === target;
+				// the schema we're trying to generate.
+				// This is particularly important for z.custom schemas.
+				schema === target;
 	}
 
-	checks<TChecks extends { kind: string }[]>(checks: TChecks) {
+	// checks<TChecks extends { kind: string }[]>(checks: TChecks) {
+	// 	return new Checks(checks);
+	// }
+	checks<TChecks extends { _zod: { def: { check: string } } }[]>(
+		checks: TChecks,
+	) {
 		return new Checks(checks);
 	}
 

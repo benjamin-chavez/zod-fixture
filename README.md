@@ -329,7 +329,7 @@ const EmailGenerator = Generator({
 const StringGenerator = Generator({
 	schema: ZodString,
 	output: ({ transform, def }) => {
-		let min = transform.utils.checks(def.checks).find('min')?.value;
+		let min = transform.utils.checks(def.checks).find('greater_than')?.value;
 		/**
 		 *     kind: "min";
 		 *     value: number;

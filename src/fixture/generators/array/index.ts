@@ -1,11 +1,19 @@
+// src/fixture/generators/array/index.ts
+
 import { ZodArray } from '@/internal/zod';
 import { Generator } from '@/transformer/generator';
 
 export const ArrayGenerator = Generator({
 	schema: ZodArray,
 	output: ({ def, transform, context }) => {
-		const userDefinedMin = def.minLength?.value ?? def.exactLength?.value;
-		const userDefinedMax = def.maxLength?.value ?? def.exactLength?.value;
+		const checks = transform.utils.checks(def.checks ?? []);
+
+		const minCheck = checks.find('min_length')?._zod.def.minimum;
+		const maxCheck = checks.find('max_length')?._zod.def.maximum;
+		const lengthCheck = checks.find('length_equals')?._zod.def.length;
+
+		const userDefinedMin = minCheck ?? lengthCheck;
+		const userDefinedMax = maxCheck ?? lengthCheck;
 
 		const min = transform.utils.resolveValue({
 			initial: userDefinedMin,
@@ -23,7 +31,7 @@ export const ArrayGenerator = Generator({
 
 		const result: unknown[] = [];
 
-		transform.utils.ifNotNever(def.type, (schema) => {
+		transform.utils.ifNotNever((def as any).element, (schema) => {
 			transform.utils.recursionCheck(schema, () => {
 				transform.utils.n(
 					(key) =>
@@ -31,9 +39,9 @@ export const ArrayGenerator = Generator({
 							transform.fromSchema(schema, {
 								...context,
 								path: [...context.path, key],
-							})
+							}),
 						),
-					{ min, max }
+					{ min, max },
 				);
 			});
 		});

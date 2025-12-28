@@ -1,3 +1,5 @@
+// src/fixture/generators/bigint/bigint.test.ts
+
 import { ConstrainedTransformer } from '@/transformer/transformer';
 import { describe, expect, test } from 'vitest';
 import { z } from 'zod';

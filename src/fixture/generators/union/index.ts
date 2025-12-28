@@ -1,3 +1,5 @@
+// src/fixture/generators/union/index.ts
+
 import { ZodDiscriminatedUnion, ZodUnion } from '@/internal/zod';
 import { Generator } from '@/transformer/generator';
 

@@ -6,6 +6,7 @@ import {
 	CuidGenerator,
 	DateTimeGenerator,
 	EmailGenerator,
+	EmojiGenerator,
 	IpGenerator,
 	RegexGenerator,
 	StringGenerator,
@@ -15,9 +16,12 @@ import {
 } from '.';
 import { ITERATIONS } from '../../../../.vitest/utils';
 import { ObjectGenerator } from '../object';
+import { UnionGenerator } from '@/fixture';
 
 describe('create strings', () => {
 	const transform = new ConstrainedTransformer().extend([
+		UnionGenerator,
+		EmojiGenerator,
 		IpGenerator,
 		UlidGenerator,
 		UuidGenerator,
@@ -74,11 +78,11 @@ describe('create strings', () => {
 	});
 
 	test('produces a valid string that is a uuid', () => {
-		expect(transform).toReasonablySatisfy(z.string().uuid());
+		expect(transform).toReasonablySatisfy(z.uuid());
 	});
 
 	test('creates a string that is a uuid', () => {
-		expect(transform.fromSchema(z.string().uuid())).toMatch(
+		expect(transform.fromSchema(z.uuid())).toMatch(
 			/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
 		);
 	});
@@ -92,19 +96,19 @@ describe('create strings', () => {
 	});
 
 	test('produces a valid string that is a cuid', () => {
-		expect(transform).toReasonablySatisfy(z.string().cuid());
+		expect(transform).toReasonablySatisfy(z.cuid());
 	});
 
 	test('produces a valid string that is a cuid2', () => {
-		expect(transform).toReasonablySatisfy(z.string().cuid2());
+		expect(transform).toReasonablySatisfy(z.cuid2());
 	});
 
 	test('produces a valid string that is a email', () => {
-		expect(transform).toReasonablySatisfy(z.string().email());
+		expect(transform).toReasonablySatisfy(z.email());
 	});
 
 	test('creates a string that is an email', () => {
-		const email = transform.fromSchema(z.string().email());
+		const email = transform.fromSchema(z.email());
 		expect(email).include('@');
 		expect(email).include('.');
 	});
@@ -128,7 +132,7 @@ describe('create strings', () => {
 	});
 
 	test('creates a valid ulid', () => {
-		expect(transform).toReasonablySatisfy(z.string().ulid());
+		expect(transform).toReasonablySatisfy(z.ulid());
 	});
 
 	test('produces a valid string with a start and end', () => {
@@ -158,11 +162,11 @@ describe('create strings', () => {
 	});
 
 	test('produces a valid string that is a url', () => {
-		expect(transform).toReasonablySatisfy(z.string().url());
+		expect(transform).toReasonablySatisfy(z.url());
 	});
 
 	test('creates a string that is an URL', () => {
-		const url = transform.fromSchema(z.string().url());
+		const url = transform.fromSchema(z.url());
 		expect(url).toMatch(
 			/(?:https?):\/\/(\w+:?\w*)?(\S+)(:\d+)?(\/|\/([\w#!:.?+=&%!\-/]))?/,
 		);
@@ -192,7 +196,7 @@ describe('create strings', () => {
 	});
 
 	test('correctly creates an emoji string', () => {
-		expect(transform).toReasonablySatisfy(z.string().emoji());
+		expect(transform).toReasonablySatisfy(z.emoji());
 	});
 
 	test('creates a large string using length with startsWith and endsWith', () => {
@@ -205,9 +209,9 @@ describe('create strings', () => {
 	});
 
 	test('creates a proper IP address', () => {
-		expect(transform).toReasonablySatisfy(z.string().ip());
-		expect(transform).toReasonablySatisfy(z.string().ip({ version: 'v4' }));
-		expect(transform).toReasonablySatisfy(z.string().ip({ version: 'v6' }));
+		expect(transform).toReasonablySatisfy(z.union([z.ipv4(), z.ipv6()]));
+		expect(transform).toReasonablySatisfy(z.ipv4());
+		expect(transform).toReasonablySatisfy(z.ipv6());
 	});
 
 	test('creates a large string using min and max', () => {
@@ -221,13 +225,13 @@ describe('create strings', () => {
 	});
 
 	test('produces a valid string that is a datetime', () => {
-		expect(transform).toReasonablySatisfy(z.string().datetime());
+		expect(transform).toReasonablySatisfy(z.iso.datetime());
 	});
 
 	test('produces a valid string that is a datetime', () => {
-		expect(transform.fromSchema(z.string().datetime())).toBeTypeOf('string');
+		expect(transform.fromSchema(z.iso.datetime())).toBeTypeOf('string');
 		expect(
-			new Date(transform.fromSchema(z.string().datetime()) as string),
+			new Date(transform.fromSchema(z.iso.datetime()) as string),
 		).toBeInstanceOf(Date);
 	});
 

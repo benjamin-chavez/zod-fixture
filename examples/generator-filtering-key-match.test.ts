@@ -11,11 +11,11 @@ const NameGenerator = Generator({
 
 const personSchema = z.object({
 	name: z.string(), // this matches ['name']
-	email: z.string().email(),
+	email: z.email(),
 	relatives: z
 		.object({
 			name: z.string(), // this will match as well ['relatives', 'name']
-			email: z.string().email(),
+			email: z.email(),
 		})
 		.array(),
 });

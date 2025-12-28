@@ -11,7 +11,7 @@ describe('transform', () => {
 	test('throws on invalid schema type', () => {
 		const transform = new ConstrainedTransformer();
 		const input = z.string();
-		expect(() => transform.fromSchema(input)).toThrowError(input._def.typeName);
+		expect(() => transform.fromSchema(input)).toThrowError(input.constructor.name);
 	});
 
 	test('creates a fixture', () => {

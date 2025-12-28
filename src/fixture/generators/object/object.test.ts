@@ -113,12 +113,10 @@ describe('create objects', () => {
 	});
 
 	test('creates an object with additional keys for passthrough', () => {
-		const input = z
-			.object({
-				str: z.string(),
-				num: z.number(),
-			})
-			.passthrough();
+		const input = z.looseObject({
+        				str: z.string(),
+        				num: z.number(),
+        			});
 
 		type I = z.infer<typeof input>;
 
@@ -139,11 +137,11 @@ describe('create Records', () => {
 	]);
 
 	test('produces a valid record', () => {
-		expect(transform).toReasonablySatisfy(z.record(z.number()));
+		expect(transform).toReasonablySatisfy(z.record(z.string(), z.number()));
 	});
 
 	test('creates a record with 3 entries', () => {
-		const input = z.record(z.number());
+		const input = z.record(z.string(), z.number());
 		const result = transform.fromSchema(input);
 
 		type I = z.infer<typeof input>;

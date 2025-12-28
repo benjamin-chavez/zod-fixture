@@ -1,3 +1,4 @@
+// src/fixture/generators/string/index.ts
 import type { ZodStringDef } from '@/internal/zod';
 import { ZodString } from '@/internal/zod';
 import { Generator } from '@/transformer/generator';
@@ -6,19 +7,38 @@ import type { Runner } from '@/transformer/runner';
 const prefixPattern = (str: string) => `^.{${str.length}}`;
 const suffixPattern = (str: string) => `.{${str.length}}$`;
 
-function formatString(transform: Runner, def: ZodStringDef, value: string) {
-	const checks = transform.utils.checks(def.checks);
+// Helper to find string_format checks by format type
+function findFormat(
+	checks: ReturnType<Runner['utils']['checks']>,
+	format: string,
+) {
+	// Need to find the check with matching format, not just the first string_format
+	const allChecks = (checks as any).checks ?? [];
+	return allChecks.find(
+		(c: any) =>
+			c._zod?.def?.check === 'string_format' && c._zod?.def?.format === format,
+	);
+}
 
-	let max = checks.find('max')?.value;
-	let min = checks.find('min')?.value ?? 0;
-	const length = checks.find('length')?.value;
-	const includes = checks.find('includes')?.value;
-	const startsWith = checks.find('startsWith')?.value;
-	const endsWith = checks.find('endsWith')?.value;
-	const emoji = checks.has('emoji');
-	const isTrimmed = checks.has('trim');
-	const isUpperCase = checks.has('toUpperCase');
-	const isLowerCase = checks.has('toLowerCase');
+function hasFormat(
+	checks: ReturnType<Runner['utils']['checks']>,
+	format: string,
+) {
+	return findFormat(checks, format) !== undefined;
+}
+
+function formatString(transform: Runner, def: ZodStringDef, value: string) {
+	const checks = transform.utils.checks(def.checks ?? []);
+
+	let max = checks.find('max_length')?._zod.def.maximum;
+	let min = checks.find('min_length')?._zod.def.minimum ?? 0;
+	const length = checks.find('length_equals')?._zod.def.length;
+	const includes = findFormat(checks, 'includes')?._zod.def.includes;
+	const startsWith = findFormat(checks, 'starts_with')?._zod.def.prefix;
+	const endsWith = findFormat(checks, 'ends_with')?._zod.def.suffix;
+	const emoji = hasFormat(checks, 'emoji');
+	// trim/toUpperCase/toLowerCase are now 'overwrite' checks - harder to detect
+	// You may need to check schema properties directly or skip these
 
 	if (length) {
 		min = length;
@@ -50,18 +70,18 @@ function formatString(transform: Runner, def: ZodStringDef, value: string) {
 		value = value.replace(new RegExp(suffixPattern(endsWith)), endsWith);
 	}
 
-	if (isUpperCase) {
-		value = value.toUpperCase();
-	} else if (isLowerCase) {
-		value = value.toLowerCase();
-	}
-
-	if (isTrimmed) {
-		value = value.trim();
-	}
-
 	if (emoji) {
 		value = value.replace(/./g, () => transform.utils.random.emoji());
+	}
+
+	// Apply overwrite transforms (trim, toUpperCase, toLowerCase, etc.)
+	for (const check of (def.checks ?? []) as any[]) {
+		if (
+			check._zod?.def?.check === 'overwrite' &&
+			typeof check._zod.def.tx === 'function'
+		) {
+			value = check._zod.def.tx(value);
+		}
 	}
 
 	return max ? value.slice(0, max) : value;
@@ -70,15 +90,15 @@ function formatString(transform: Runner, def: ZodStringDef, value: string) {
 export const StringGenerator = Generator({
 	schema: ZodString,
 	output: ({ def, transform }) => {
-		const checks = transform.utils.checks(def.checks);
+		const checks = transform.utils.checks(def.checks ?? []);
 
-		let min = checks.find('min')?.value;
-		let max = checks.find('max')?.value;
+		let min = checks.find('min_length')?._zod.def.minimum;
+		let max = checks.find('max_length')?._zod.def.maximum;
 
-		const length = checks.find('length');
+		const length = checks.find('length_equals')?._zod.def.length;
 		if (length) {
-			min = length.value;
-			max = length.value;
+			min = length;
+			max = length;
 		}
 
 		return formatString(
@@ -90,62 +110,76 @@ export const StringGenerator = Generator({
 });
 
 export const UlidGenerator = Generator({
-	schema: ZodString,
-	filter: ({ def, transform }) =>
-		transform.utils.checks(def.checks).has('ulid'),
+	filter: ({ schema }) => schema.constructor.name === 'ZodULID',
 	output: ({ def, transform }) =>
 		formatString(transform, def, transform.utils.random.ulid()),
 });
 
 export const UrlGenerator = Generator({
-	schema: ZodString,
-	filter: ({ def, transform }) => transform.utils.checks(def.checks).has('url'),
-	output: ({ def, transform }) => {
-		return formatString(
+	filter: ({ schema }) => schema.constructor.name === 'ZodURL',
+	output: ({ def, transform }) =>
+		formatString(
 			transform,
 			def,
 			`https://${transform.utils.random.lorem(1)}.com`,
-		);
-	},
+		),
 });
 
 export const UuidGenerator = Generator({
-	schema: ZodString,
-	filter: ({ def, transform }) =>
-		transform.utils.checks(def.checks).has('uuid'),
+	filter: ({ schema }) => schema.constructor.name === 'ZodUUID',
 	output: ({ transform }) => transform.utils.random.uuid(),
 });
 
 export const EmailGenerator = Generator({
-	schema: ZodString,
-	filter: ({ def, transform }) =>
-		transform.utils.checks(def.checks).has('email'),
+	filter: ({ schema }) => schema.constructor.name === 'ZodEmail',
 	output: ({ def, transform }) =>
 		formatString(transform, def, 'rando@email.com'),
 });
 
 export const CuidGenerator = Generator({
-	schema: ZodString,
-	filter: ({ def, transform }) =>
-		transform.utils.checks(def.checks).has('cuid'),
+	filter: ({ schema }) => schema.constructor.name === 'ZodCUID',
 	output: ({ def, transform }) =>
 		formatString(transform, def, transform.utils.random.cuid()),
 });
 
-export const IpGenerator = Generator({
-	schema: ZodString,
-	filter: ({ def, transform }) => transform.utils.checks(def.checks).has('ip'),
-	output: ({ def, transform }) => {
-		const version =
-			transform.utils.checks(def.checks).find('ip')?.version ??
-			transform.utils.random.from(['v4', 'v6']);
+export const Cuid2Generator = Generator({
+	filter: ({ schema }) => schema.constructor.name === 'ZodCUID2',
+	output: ({ def, transform }) =>
+		formatString(transform, def, transform.utils.random.cuid2()),
+});
 
-		if (version === 'v4') {
+export const DateTimeGenerator = Generator({
+	filter: ({ schema }) => schema.constructor.name === 'ZodISODateTime',
+	output: ({ transform }) => transform.utils.random.date().toISOString(),
+});
+
+export const RegexGenerator = Generator({
+	schema: ZodString,
+	filter: ({ def, transform }) =>
+		hasFormat(transform.utils.checks(def.checks ?? []), 'regex'),
+	output: ({ def, transform }) => {
+		const pattern = findFormat(
+			transform.utils.checks(def.checks ?? []),
+			'regex',
+		)?._zod.def.pattern;
+		if (!pattern) {
+			throw new Error(`RegexGenerator: regex pattern not found`);
+		}
+		return formatString(transform, def, transform.utils.random.regexp(pattern));
+	},
+});
+
+// IP generator needs to handle ipv4/ipv6 separately now
+export const IpGenerator = Generator({
+	filter: ({ schema }) =>
+		schema.constructor.name === 'ZodIPv4' ||
+		schema.constructor.name === 'ZodIPv6',
+	output: ({ schema, transform }) => {
+		if (schema.constructor.name === 'ZodIPv4') {
 			return transform.utils
 				.n(() => transform.utils.random.int({ min: 1, max: 255 }), 4)
 				.join('.');
 		}
-
 		return transform.utils
 			.n(
 				() => transform.utils.random.int({ min: 0, max: 65535 }).toString(16),
@@ -155,30 +189,7 @@ export const IpGenerator = Generator({
 	},
 });
 
-export const Cuid2Generator = Generator({
-	schema: ZodString,
-	filter: ({ def, transform }) =>
-		transform.utils.checks(def.checks).has('cuid2'),
-	output: ({ def, transform }) =>
-		formatString(transform, def, transform.utils.random.cuid2()),
-});
-
-export const DateTimeGenerator = Generator({
-	schema: ZodString,
-	filter: ({ def, transform }) =>
-		transform.utils.checks(def.checks).has('datetime'),
-	output: ({ transform }) => transform.utils.random.date().toISOString(),
-});
-
-export const RegexGenerator = Generator({
-	schema: ZodString,
-	filter: ({ def, transform }) =>
-		transform.utils.checks(def.checks).has('regex'),
-	output: ({ def, transform }) => {
-		const pattern = transform.utils.checks(def.checks).find('regex')?.regex;
-		if (!pattern) {
-			throw new Error(`RegexGenerator: regex pattern not found`);
-		}
-		return formatString(transform, def, transform.utils.random.regexp(pattern));
-	},
+export const EmojiGenerator = Generator({
+	filter: ({ schema }) => schema.constructor.name === 'ZodEmoji',
+	output: ({ transform }) => transform.utils.random.emoji(),
 });

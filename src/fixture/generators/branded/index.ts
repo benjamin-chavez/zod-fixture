@@ -4,5 +4,5 @@ import { Generator } from '@/transformer/generator';
 export const BrandedGenerator = Generator({
 	schema: ZodBranded,
 	output: ({ def, transform, context }) =>
-		transform.fromSchema(def.type, context),
+		transform.fromSchema(def.element, context),
 });

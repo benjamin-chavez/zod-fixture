@@ -1,4 +1,4 @@
-import type { ZodTypeAny } from '@/internal/zod';
+import type { ZodType } from '@/internal/zod';
 import type { Defaults } from './defaults';
 import type { Context } from './generator';
 import type { Transformer } from './transformer';
@@ -20,7 +20,7 @@ export class Runner {
 		this.utils = new Utils(this);
 	}
 
-	fromSchema<TSchema extends ZodTypeAny>(
+	fromSchema<TSchema extends ZodType>(
 		schema: TSchema,
 		context: Context = { path: [] },
 	): unknown {
@@ -51,7 +51,7 @@ export class Runner {
 	}
 
 	shouldHaveMatch(
-		schema: ZodTypeAny,
+		schema: ZodType,
 		generator: unknown,
 	): asserts generator is NonNullable<unknown> {
 		if (!generator) throw this.transformer.missingGeneratorError(schema);

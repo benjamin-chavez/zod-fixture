@@ -1,4 +1,4 @@
-import type { ZodTypeAny } from '@/internal/zod';
+import type { ZodType } from '@/internal/zod';
 import type { Defaults } from './defaults';
 import { constrained, randomSeed, unconstrained } from './defaults';
 import type { Definition } from './generator';
@@ -22,14 +22,14 @@ export abstract class Transformer {
 		return this;
 	}
 
-	fromSchema<TSchema extends ZodTypeAny>(
+	fromSchema<TSchema extends ZodType>(
 		schema: TSchema,
 		instanceDefaults?: Partial<Defaults>,
 	): unknown {
 		return new Runner(this, instanceDefaults).fromSchema(schema);
 	}
 
-	missingGeneratorError(schema: ZodTypeAny) {
+	missingGeneratorError(schema: ZodType) {
 		return new Error(`No generator found for ${schema.constructor.name}.`);
 	}
 }

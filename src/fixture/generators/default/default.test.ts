@@ -1,7 +1,8 @@
+// src/fixture/generators/default/default.test.ts
 import { ConstrainedTransformer } from '@/transformer/transformer';
 import { describe, expect, test } from 'vitest';
 import { z } from 'zod';
-import { DefaultGenerator } from '.';
+import { DefaultGenerator, PrefaultGenerator } from '.';
 import { ArrayGenerator } from '../array';
 import { StringGenerator } from '../string';
 
@@ -9,10 +10,11 @@ describe('create default', () => {
 	const transform = new ConstrainedTransformer().extend([
 		ArrayGenerator,
 		DefaultGenerator,
+		PrefaultGenerator,
 		StringGenerator,
 	]);
 
-	const schema = z.string().default('test');
+	const schema = z.string().prefault('test');
 
 	test('produce deterministic results', () => {
 		const result1 = transform.fromSchema(schema.array(), {

@@ -1,12 +1,21 @@
+// src/transformer/utils/Checks.ts
 type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N;
 
-export class Checks<TChecks extends { kind: string }[]> {
+type ZodV4Check = {
+	_zod: {
+		def: {
+			check: string;
+			[key: string]: unknown;
+		};
+	};
+};
+
+export class Checks<TChecks extends ZodV4Check[]> {
 	constructor(private checks: TChecks) {}
 
-	find<TKind extends string>(
-		kind: TKind
-	): FilterChecks<TChecks[number], TKind> | undefined {
-		return this.checks.find((check) => check.kind === kind) as
+	find<TKind extends string>(kind: TKind): any {
+		// ): FilterChecks<TChecks[number], TKind> | undefined {
+		return this.checks.find((check) => check._zod.def.check === kind) as
 			| FilterChecks<TChecks[number], TKind>
 			| undefined;
 	}
@@ -16,8 +25,5 @@ export class Checks<TChecks extends { kind: string }[]> {
 	}
 }
 
-type FilterChecks<T extends { kind: string }, TKind extends string> = IfAny<
-	T,
-	unknown,
-	T extends { kind: TKind } ? T : never
->;
+// prettier-ignore
+type FilterChecks<T extends ZodV4Check, TKind extends string> = IfAny<T, unknown, T extends { _zod: { def: { check: TKind } } } ? T : never>;
