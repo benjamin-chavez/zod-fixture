@@ -11,7 +11,8 @@ export interface ZodConstructor<TSchema extends ZodType> {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	new (...args: any[]): TSchema;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	create(...args: any[]): TSchema;
+	// create(...args: any[]): TSchema;
+	create?(...args: any[]): TSchema;
 }
 
 export type ZodConstructorOrSchema<TSchema extends ZodType> =
