@@ -26,7 +26,7 @@ const output = Object.assign(
 			state: 'cetuqnbvmbkqwlt',
 			street: 'wyttcnyvxpetrsa',
 		},
-		birthday: new Date('2089-04-19T20:26:28.411Z'),
+		birthday: new Date('2030-05-11T05:41:44.421Z'),
 		name: 'barmftzlcngaynw',
 		pets: [
 			{
@@ -55,7 +55,7 @@ test('generates a person', () => {
 		    "state": "cetuqnbvmbkqwlt",
 		    "street": "wyttcnyvxpetrsa",
 		  },
-		  "birthday": 2089-04-19T20:26:28.411Z,
+		  "birthday": 2030-05-11T05:41:44.421Z,
 		  "name": "barmftzlcngaynw",
 		  "pets": [
 		    {

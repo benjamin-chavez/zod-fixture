@@ -87,6 +87,46 @@ describe('create strings', () => {
 		);
 	});
 
+	test('produces a valid string that is a uuidv4', () => {
+		expect(transform).toReasonablySatisfy(z.uuidv4());
+	});
+
+	test('creates a string that is a uuidv4', () => {
+		expect(transform.fromSchema(z.uuidv4())).toMatch(
+			/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+		);
+	});
+
+	test('produces a valid string that is a uuidv7', () => {
+		expect(transform).toReasonablySatisfy(z.uuidv7());
+	});
+
+	test('creates a string that is a uuidv7', () => {
+		expect(transform.fromSchema(z.uuidv7())).toMatch(
+			/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+		);
+	});
+
+	test('produces a valid string that is a uuidv1', () => {
+		expect(transform).toReasonablySatisfy(z.uuid({ version: 'v1' }));
+	});
+
+	test('creates a string that is a uuidv1', () => {
+		expect(transform.fromSchema(z.uuid({ version: 'v1' }))).toMatch(
+			/^[0-9a-f]{8}-[0-9a-f]{4}-1[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+		);
+	});
+
+	test('produces a valid string that is a uuidv6', () => {
+		expect(transform).toReasonablySatisfy(z.uuidv6());
+	});
+
+	test('creates a string that is a uuidv6', () => {
+		expect(transform.fromSchema(z.uuidv6())).toMatch(
+			/^[0-9a-f]{8}-[0-9a-f]{4}-6[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+		);
+	});
+
 	test('creates object with string property of length', () => {
 		const schema = z.object({
 			lastFour: z.string().length(4),

@@ -74,8 +74,8 @@ export const constrained = {
 		max: 100n,
 	},
 	date: {
-		min: Date.UTC(1900, 0, 1),
-		max: Date.UTC(2100, 11, 31),
+		min: Date.UTC(2020, 0, 1),
+		max: Date.UTC(2030, 11, 31),
 	},
 	string: {
 		min: 15,
@@ -114,8 +114,8 @@ export const unconstrained = {
 		max: BigInt(MAX_SAFE_INTEGER),
 	},
 	date: {
-		min: Date.UTC(1900, 0, 1),
-		max: Date.UTC(2100, 11, 31),
+		min: Date.UTC(2020, 0, 1),
+		max: Date.UTC(2030, 11, 31),
 	},
 	string: {
 		min: 0,

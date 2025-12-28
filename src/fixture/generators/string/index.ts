@@ -127,7 +127,27 @@ export const UrlGenerator = Generator({
 
 export const UuidGenerator = Generator({
 	filter: ({ schema }) => schema.constructor.name === 'ZodUUID',
-	output: ({ transform }) => transform.utils.random.uuid(),
+	output: ({ def, transform }) => {
+		const version = (def as any).version as string | undefined;
+
+		switch (version) {
+			case 'v7':
+				return transform.utils.random.uuidv7();
+			case 'v1':
+				return transform.utils.random.uuidv1();
+			case 'v6':
+				return transform.utils.random.uuidv6();
+			case 'v4':
+			default:
+				// v4 is random, also use as fallback for v2, v3, v5, v8
+				// which have complex generation requirements
+				// If there's a pattern in def, we could use regexp generator
+				if (version && (def as any).pattern) {
+					return transform.utils.random.regexp((def as any).pattern);
+				}
+				return transform.utils.random.uuid();
+		}
+	},
 });
 
 export const EmailGenerator = Generator({

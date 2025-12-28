@@ -4,23 +4,35 @@ import { ZodDate } from '@/internal/zod';
 import { Generator } from '@/transformer/generator';
 
 export const DateGenerator = Generator({
-	schema: ZodDate,
-	output: ({ def, transform }) => {
-		const checks = transform.utils.checks(def.checks ?? []);
+  schema: ZodDate,
+  output: ({ def, transform }) => {
+    const checks = transform.utils.checks(def.checks ?? []);
 
-		const minValue = checks.find('greater_than')?._zod.def.value;
-		const maxValue = checks.find('less_than')?._zod.def.value;
+    const minCheck = checks.find('greater_than')?._zod.def.value;
+    const maxCheck = checks.find('less_than')?._zod.def.value;
 
-		// Convert Date objects to timestamps, fall back to defaults
-		const min =
-			minValue instanceof Date
-				? minValue.getTime()
-				: transform.defaults.date.min;
-		const max =
-			maxValue instanceof Date
-				? maxValue.getTime()
-				: transform.defaults.date.max;
+    // Start with defaults
+    let min = transform.defaults.date.min;
+    let max = transform.defaults.date.max;
 
-		return new Date(transform.utils.random.int({ min, max }));
-	},
+    // Apply constraints from schema
+    if (minCheck instanceof Date) {
+      min = minCheck.getTime();
+    }
+    if (maxCheck instanceof Date) {
+      max = maxCheck.getTime();
+    }
+
+    // Adjust range if only one constraint specified and they conflict
+    if (minCheck && !maxCheck && min > max) {
+      // Only min specified, and it's past default max
+      max = min + (1000 * 60 * 60 * 24 * 365 * 10); // +10 years from min
+    }
+    if (maxCheck && !minCheck && max < min) {
+      // Only max specified, and it's before default min
+      min = max - (1000 * 60 * 60 * 24 * 365 * 10); // -10 years from max
+    }
+
+    return new Date(transform.utils.random.int({ min, max }));
+  },
 });

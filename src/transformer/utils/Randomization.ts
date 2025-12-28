@@ -1,3 +1,5 @@
+// src/transformer/utils/Randomization.ts
+
 import type { Defaults } from '../defaults';
 import MersenneTwister from './MersenneTwister';
 import { RegExCache } from './RegExCache';
@@ -37,6 +39,96 @@ export class Randomization {
 			rb = i % 8 == 0 ? (this.unitInterval() * 0xffffffff) | 0 : rb >> 4;
 		}
 		return u;
+	}
+
+	uuidv7() {
+		// UUIDv7: 48-bit timestamp + random
+		const timestamp = Date.now();
+		const timestampHex = timestamp.toString(16).padStart(12, '0');
+
+		const randHex = (count: number) => {
+			let result = '';
+			for (let i = 0; i < count; i++) {
+				result += Math.floor(this.unitInterval() * 16).toString(16);
+			}
+			return result;
+		};
+
+		const variant = ['8', '9', 'a', 'b'][Math.floor(this.unitInterval() * 4)];
+
+		return (
+			timestampHex.slice(0, 8) +
+			'-' +
+			timestampHex.slice(8, 12) +
+			'-' +
+			'7' +
+			randHex(3) +
+			'-' +
+			variant +
+			randHex(3) +
+			'-' +
+			randHex(12)
+		);
+	}
+
+	uuidv1() {
+		// UUIDv1: timestamp + node (simplified)
+		const timestamp = Date.now();
+		const timestampHex = timestamp.toString(16).padStart(12, '0');
+
+		const randHex = (count: number) => {
+			let result = '';
+			for (let i = 0; i < count; i++) {
+				result += Math.floor(this.unitInterval() * 16).toString(16);
+			}
+			return result;
+		};
+
+		const variant = ['8', '9', 'a', 'b'][Math.floor(this.unitInterval() * 4)];
+
+		return (
+			timestampHex.slice(0, 8) +
+			'-' +
+			timestampHex.slice(8, 12) +
+			'-' +
+			'1' +
+			randHex(3) +
+			'-' +
+			variant +
+			randHex(3) +
+			'-' +
+			randHex(12)
+		);
+	}
+
+	uuidv6() {
+		// UUIDv6: reordered timestamp (similar to v7)
+		const timestamp = Date.now();
+		const timestampHex = timestamp.toString(16).padStart(12, '0');
+
+		const randHex = (count: number) => {
+			let result = '';
+			for (let i = 0; i < count; i++) {
+				result += Math.floor(this.unitInterval() * 16).toString(16);
+			}
+			return result;
+		};
+
+		const variant = ['8', '9', 'a', 'b'][Math.floor(this.unitInterval() * 4)];
+
+		return (
+			timestampHex.slice(0, 8) +
+			'-' +
+			timestampHex.slice(8, 12) +
+			'-' +
+			'6' +
+			randHex(3) +
+			'-' +
+			variant +
+			randHex(3) +
+			'-' +
+			randHex(12)
+		);
 	}
 
 	// https://en.wikipedia.org/wiki/Unit_interval
