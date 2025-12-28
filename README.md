@@ -103,7 +103,7 @@ const person = createFixture(personSchema, { seed: 11 });
 		state: 'cetuqnbvmbkqwlt',
 		street: 'wyttcnyvxpetrsa',
 	},
-	birthday: new Date('2089-04-19T20:26:28.411Z'),
+	birthday: new Date('2030-05-11T05:41:44.421Z'),
 	name: 'barmftzlcngaynw',
 	pets: [
 		{
@@ -209,7 +209,7 @@ const person = fixture.fromSchema(personSchema);
 		state: 'My State',
 		street: 'My Street',
 	},
-	birthday: new Date('1952-01-21T17:32:42.094Z'),
+	birthday: new Date('2022-11-06T08:02:56.063Z'),
 	name: 'yxyzyskryqofekd',
 	pets: [
 		{
