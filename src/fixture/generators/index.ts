@@ -4,7 +4,7 @@ import { AnyGenerator } from './any';
 import { ArrayGenerator } from './array';
 import { BigIntGenerator, BigIntMultipleOfGenerator } from './bigint';
 import { BooleanGenerator } from './boolean';
-import { BrandedGenerator } from './branded';
+// import { BrandedGenerator } from './branded';
 import { DateGenerator } from './date';
 import { DefaultGenerator, PrefaultGenerator } from './default';
 import { PipeGenerator } from './effects';
@@ -84,7 +84,7 @@ export const DEFAULT_FIXTURE_GENERATORS = [
 	PromiseGenerator,
 	SymbolGenerator,
 	LazyGenerator,
-	BrandedGenerator,
+	// BrandedGenerator,
 	VoidGenerator,
 	NeverGenerator,
 	StringGenerator,
@@ -99,7 +99,7 @@ export {
 	BigIntGenerator,
 	BigIntMultipleOfGenerator,
 	BooleanGenerator,
-	BrandedGenerator,
+	// BrandedGenerator,
 	Cuid2Generator,
 	CuidGenerator,
 	DateGenerator,

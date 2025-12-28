@@ -1,12 +1,8 @@
 // skratch.ts
 const z = require('zod');
 
-// Check what's available
-console.log('ZodType:', typeof z.ZodType);
-console.log('ZodString:', typeof z.ZodString);
-console.log('ZodLiteral:', typeof z.ZodLiteral);
-
-// Check a literal's type structure
-const literal = z.literal('test');
-console.log('literal constructor:', literal.constructor.name);
-console.log('literal._def:', literal._def);
+const branded = z.string().brand('test');
+console.log('constructor:', branded.constructor.name);
+console.log('branded._def:', branded._def);
+console.log('branded._zod:', branded._zod);
+console.log('branded._zod.def:', branded._zod?.def);

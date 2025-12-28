@@ -243,7 +243,7 @@ export {
 	ZodArray,
 	ZodBigInt,
 	ZodBoolean,
-	ZodBranded,
+	// ZodBranded removed - doesn't exist in v4
 	ZodCatch,
 	ZodDate,
 	ZodDefault,
@@ -352,4 +352,20 @@ export const getParsedType = (data: any): ZodParsedType => {
 		default:
 			return ZodParsedType.unknown;
 	}
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const util = {
+	objectKeys:
+		typeof Object.keys === 'function'
+			? (obj: any) => Object.keys(obj)
+			: (object: any) => {
+					const keys = [];
+					for (const key in object) {
+						if (Object.prototype.hasOwnProperty.call(object, key)) {
+							keys.push(key);
+						}
+					}
+					return keys;
+				},
 };
